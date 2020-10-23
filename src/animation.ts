@@ -234,6 +234,10 @@ export abstract class BaseAnimation implements Animation {
     if (this.animationState.type === AnimationType.Gone) return;
 
     const resetContext = this.updateContext();
+    // x = Math.round(x);
+    // y = Math.round(y);
+    // w = Math.round(w);
+    // h = Math.round(h);
     this.ctx.fillRect(x, y, w, h);
     resetContext();
   };
@@ -242,6 +246,10 @@ export abstract class BaseAnimation implements Animation {
     if (this.animationState.type === AnimationType.Gone) return;
 
     const resetContext = this.updateContext();
+    // x = Math.floor(x) + 0.5;
+    // y = Math.floor(y) + 0.5;
+    // w = Math.floor(w) + 0.5;
+    // h = Math.floor(h) + 0.5;
     this.ctx.strokeRect(x, y, w, h);
     resetContext();
   };
