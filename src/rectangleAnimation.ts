@@ -25,7 +25,7 @@ abstract class RectangleAnimation extends BaseAnimation {
     ctx,
     rectangle,
     duration,
-    easingFunction
+    easingFunction,
   }: RectangleAnimationArgs) {
     super(ctx);
 
@@ -48,7 +48,7 @@ abstract class RectangleAnimation extends BaseAnimation {
   };
 }
 
-export default class Rectangle {
+export class Rectangle {
   x: number;
   y: number;
   width: number;
@@ -68,7 +68,7 @@ export default class Rectangle {
     duration,
     size,
     easingFunction,
-    name
+    name,
   }: {
     ctx: CanvasRenderingContext2D;
     duration: number;
@@ -83,7 +83,7 @@ export default class Rectangle {
         rectangle,
         duration,
         toSize: size,
-        easingFunction
+        easingFunction,
       });
       if (name) {
         animation.setName(name);
@@ -107,7 +107,7 @@ export default class Rectangle {
         ctx,
         rectangle,
         duration,
-        to
+        to,
       });
     };
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
@@ -125,7 +125,7 @@ export default class Rectangle {
         ctx,
         rectangle,
         duration,
-        toSize: size
+        toSize: size,
       });
     };
 
@@ -144,7 +144,7 @@ export default class Rectangle {
         ctx,
         rectangle,
         duration,
-        to
+        to,
       });
     };
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
@@ -168,7 +168,7 @@ export class Scale extends RectangleAnimation {
 
     this.fromSize = {
       width: this.rectangle.width,
-      height: this.rectangle.height
+      height: this.rectangle.height,
     };
   }
 
@@ -211,7 +211,7 @@ export class Translate extends RectangleAnimation {
     this.duration = duration;
     this.from = {
       x: this.rectangle.x,
-      y: this.rectangle.y
+      y: this.rectangle.y,
     };
     this.to = to;
   }
@@ -286,7 +286,7 @@ class RectangleAnimations extends BaseSequential {
   scale = ({
     duration,
     size,
-    easingFunction
+    easingFunction,
   }: {
     duration: number;
     size: Size;
@@ -299,7 +299,7 @@ class RectangleAnimations extends BaseSequential {
           rectangle,
           duration,
           toSize: size,
-          easingFunction
+          easingFunction,
         })
     );
 
@@ -310,7 +310,7 @@ class RectangleAnimations extends BaseSequential {
     duration,
     to,
     easingFunction,
-    name
+    name,
   }: {
     duration: number;
     to: Point2D;
@@ -323,7 +323,7 @@ class RectangleAnimations extends BaseSequential {
         rectangle,
         duration,
         to,
-        easingFunction
+        easingFunction,
       });
       if (name) animation.setName(name);
       return animation;

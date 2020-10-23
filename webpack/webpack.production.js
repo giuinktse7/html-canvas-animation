@@ -2,7 +2,7 @@ const path = require("path");
 
 module.exports = config => ({
   mode: "production",
-  entry: [config.sourceDir],
+  entry: [path.resolve(config.sourceDir, "./index.ts")],
   devtool: "source-map",
   module: {
     rules: [
@@ -28,5 +28,7 @@ module.exports = config => ({
   output: {
     filename: "html-canvas-animation-min.js",
     path: config.buildDir + "/release",
+    library: "html-canvas-animation",
+    libraryTarget: "umd",
   },
 });

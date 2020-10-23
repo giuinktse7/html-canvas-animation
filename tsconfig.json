@@ -1,23 +1,20 @@
 {
   "compilerOptions": {
-    "target": "ES2018",
-    "module": "es6",
+    "target": "es2018",
     "outDir": "build",
     "noImplicitAny": false,
     "strict": true,
-    "jsx": "preserve",
     "importHelpers": true,
     "moduleResolution": "node",
     "skipLibCheck": true,
     "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "sourceMap": true,
     "declaration": true,
+    "sourceMap": true,
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"]
     },
-    "lib": ["esnext", "dom", "dom.iterable", "scripthost"]
+    "lib": ["es6", "dom"]
   },
   "include": ["src/**/*.ts"],
   "exclude": ["node_modules"]

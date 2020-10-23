@@ -14,7 +14,7 @@ type PaletteAnimationConfig = {
   duration: number;
 };
 
-export default class PaletteAnimation extends BaseAnimation {
+export class PaletteAnimation extends BaseAnimation {
   swatch: ColorSample;
   topLeft: Point2D;
   current: Point2D;

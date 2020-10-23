@@ -1,6 +1,6 @@
 import { BaseAnimation, Point2D } from "./animation";
 
-export default class LineAnimation extends BaseAnimation {
+export class LineAnimation extends BaseAnimation {
   from: Point2D;
   to: Point2D;
   current: Point2D;
