@@ -1,334 +1,365 @@
 import { EasingFunction } from "./easing";
 
-namespace Animation {
-  export type Point2D = { x: number; y: number };
+export type Point2D = { x: number; y: number };
 
-  export enum AnimationType {
-    Active = 0,
-    FadeOut = 1,
-    Gone = 2,
-    ScheduledForDeletion = 3,
-  }
+interface RenderOptions {
+  opacity?: number;
+}
 
-  // eslint-disable-next-line @typescript-eslint/no-namespace
-  namespace Anim {
-    export type Active = {
-      type: AnimationType.Active;
-    };
+export enum AnimationType {
+  Active = 0,
+  FadeOut = 1,
+  Gone = 2,
+  ScheduledForDeletion = 3,
+}
 
-    export type FadeOut = {
-      type: AnimationType.FadeOut;
-      elapsedTime: number;
-      duration: number;
-      opacity: number;
-      removeWhenInvisible: boolean;
-      easingFunction: EasingFunction;
-    };
+// eslint-disable-next-line @typescript-eslint/no-namespace
+namespace Anim {
+  export type Active = {
+    type: AnimationType.Active;
+  };
 
-    export type Gone = {
-      type: AnimationType.Gone;
-    };
+  export type FadeOut = {
+    type: AnimationType.FadeOut;
+    elapsedTime: number;
+    duration: number;
+    opacity: number;
+    removeWhenInvisible: boolean;
+    easingFunction: EasingFunction;
+  };
 
-    export type ScheduledForDeletion = {
-      type: AnimationType.ScheduledForDeletion;
-    };
-  }
+  export type Gone = {
+    type: AnimationType.Gone;
+  };
 
-  type AnimationState =
-    | Anim.Active
-    | Anim.FadeOut
-    | Anim.Gone
-    | Anim.ScheduledForDeletion;
+  export type ScheduledForDeletion = {
+    type: AnimationType.ScheduledForDeletion;
+  };
+}
 
-  export interface Animation {
-    animationState: AnimationState;
-    update: (deltaTime: number) => boolean;
-    render: () => void;
+type AnimationState =
+  | Anim.Active
+  | Anim.FadeOut
+  | Anim.Gone
+  | Anim.ScheduledForDeletion;
 
-    isFinished: () => boolean;
-    temporary: boolean;
+export interface Animation {
+  animationState: AnimationState;
+  update: (deltaTime: number) => boolean;
+  render: (renderOptions?: RenderOptions) => void;
 
-    fadeOut: (duration: number, f?: EasingFunction) => void;
-    getContext(): CanvasRenderingContext2D;
+  isFinished: () => boolean;
+  temporary: boolean;
 
-    shouldDelete(): boolean;
+  fadeOut: (duration: number, f?: EasingFunction) => void;
+  getContext(): CanvasRenderingContext2D;
 
-    identifier: string;
-    setName: (name: string) => void;
-  }
+  shouldDelete(): boolean;
 
-  export abstract class BaseAnimation implements Animation {
-    identifier = "N/A";
-    readonly ctx: CanvasRenderingContext2D;
-    temporary = false;
-    animationState: AnimationState = { type: AnimationType.Active };
-    private finished = false;
-    onFinish?: () => void;
+  identifier: string;
+  setName: (name: string) => void;
+}
 
-    protected abstract updateAnimation: (deltaTime: number) => boolean;
-    protected abstract draw: () => void;
-    isFinished = (): boolean => this.finished;
-    setFinished = (finished: boolean): void => {
-      if (this.finished && !finished) {
-        console.warn("this.finished was true, but setting it back to false?");
+export abstract class BaseAnimation implements Animation {
+  identifier = "N/A";
+  readonly ctx: CanvasRenderingContext2D;
+  temporary = false;
+  animationState: AnimationState = { type: AnimationType.Active };
+  private finished = false;
+  onFinish?: () => void;
+
+  protected renderOptions = (): RenderOptions | undefined => {
+    const options: RenderOptions = {};
+    switch (this.animationState.type) {
+      case AnimationType.FadeOut: {
+        options.opacity = this.animationState.opacity;
+        break;
       }
-
-      // if (!this.finished && finished) {
-      //   if (this.identifier === "N/A") {
-      //     console.log(this);
-      //   }
-      //   console.log("Animation " + this.identifier + " finished.");
-      // }
-
-      this.finished = finished;
-    };
-
-    constructor(ctx: CanvasRenderingContext2D) {
-      this.ctx = ctx;
+      default:
+        break;
     }
 
-    setName = (name: string) => {
-      this.identifier = name;
-    };
+    const empty = Object.keys(options).length === 0;
+    return empty ? undefined : options;
+  };
 
-    update = (deltaTime: number) => {
-      switch (this.animationState.type) {
-        case AnimationType.Active:
-          break;
-        case AnimationType.FadeOut: {
-          this.animationState.elapsedTime += deltaTime;
-          const t =
-            this.animationState.elapsedTime / this.animationState.duration;
-          this.animationState.opacity = Math.max(
-            1 - this.animationState.easingFunction(t),
-            0
-          );
+  protected abstract updateAnimation: (deltaTime: number) => boolean;
+  protected abstract draw: () => void;
+  isFinished = (): boolean => this.finished;
+  setFinished = (finished: boolean): void => {
+    if (this.finished && !finished) {
+      console.warn("this.finished was true, but setting it back to false?");
+    }
 
-          if (this.animationState.opacity === 0) {
-            this.animationState = this.animationState.removeWhenInvisible
-              ? { type: AnimationType.ScheduledForDeletion }
-              : { type: AnimationType.Gone };
-          }
+    // if (!this.finished && finished) {
+    //   if (this.identifier === "N/A") {
+    //     console.log(this);
+    //   }
+    //   console.log("Animation " + this.identifier + " finished.");
+    // }
 
-          break;
+    this.finished = finished;
+  };
+
+  constructor(ctx: CanvasRenderingContext2D) {
+    this.ctx = ctx;
+  }
+
+  setName = (name: string) => {
+    this.identifier = name;
+  };
+
+  update = (deltaTime: number) => {
+    switch (this.animationState.type) {
+      case AnimationType.Active:
+        break;
+      case AnimationType.FadeOut: {
+        this.animationState.elapsedTime += deltaTime;
+        const t =
+          this.animationState.elapsedTime / this.animationState.duration;
+        this.animationState.opacity = Math.max(
+          1 - this.animationState.easingFunction(t),
+          0
+        );
+
+        if (this.animationState.opacity === 0) {
+          this.animationState = this.animationState.removeWhenInvisible
+            ? { type: AnimationType.ScheduledForDeletion }
+            : { type: AnimationType.Gone };
         }
 
-        case AnimationType.Gone:
-          return true;
-        case AnimationType.ScheduledForDeletion:
-          return true;
-      }
-      const wasFinished = this.isFinished();
-      const finished = this.updateAnimation(deltaTime);
-      if (!wasFinished && finished) {
-        this.onFinish?.();
+        break;
       }
 
-      return finished;
-    };
+      case AnimationType.Gone:
+        return true;
+      case AnimationType.ScheduledForDeletion:
+        return true;
+    }
+    const wasFinished = this.isFinished();
+    const finished = this.updateAnimation(deltaTime);
+    if (!wasFinished && finished) {
+      this.onFinish?.();
+    }
 
-    render = () => {
-      if (!this.shouldDraw()) return;
+    return finished;
+  };
 
+  setRenderOptions = (options: RenderOptions): (() => void) => {
+    const { ctx } = this;
+    ctx.save();
+    if (options.opacity) {
+      ctx.globalAlpha = options.opacity;
+    }
+    return () => ctx.restore();
+  };
+
+  render = (options?: RenderOptions) => {
+    if (!this.shouldDraw()) return;
+    if (options !== undefined) {
+      const restore = this.setRenderOptions(options);
       this.draw();
+      restore();
+    } else {
+      this.draw();
+    }
+  };
+
+  fadeOut = (
+    duration: number,
+    f: EasingFunction = (x: number) => x,
+    removeWhenInvisible = true
+  ) => {
+    if (this.animationState.type === AnimationType.Gone) return;
+
+    this.animationState = {
+      type: AnimationType.FadeOut,
+      removeWhenInvisible,
+      elapsedTime: 0,
+      duration,
+      opacity: 1,
+      easingFunction: f,
     };
+  };
 
-    fadeOut = (
-      duration: number,
-      f: EasingFunction = (x: number) => x,
-      removeWhenInvisible = true
-    ) => {
-      if (this.animationState.type === AnimationType.Gone) return;
+  shouldDelete = (): boolean => {
+    const result =
+      this.animationState.type === AnimationType.ScheduledForDeletion ||
+      (this.isFinished() && this.temporary);
 
-      this.animationState = {
-        type: AnimationType.FadeOut,
-        removeWhenInvisible,
-        elapsedTime: 0,
-        duration,
-        opacity: 1,
-        easingFunction: f,
-      };
-    };
+    return result;
+  };
 
-    shouldDelete = (): boolean => {
-      const result =
-        this.animationState.type === AnimationType.ScheduledForDeletion ||
-        (this.isFinished() && this.temporary);
+  getContext = () => this.ctx;
 
-      return result;
-    };
+  updateContext = () => {
+    const oldOpacity = this.ctx.globalAlpha;
 
-    getContext = () => this.ctx;
-
-    updateContext = () => {
-      const oldOpacity = this.ctx.globalAlpha;
-
-      switch (this.animationState.type) {
-        case AnimationType.FadeOut:
-          this.ctx.globalAlpha *= this.animationState.opacity;
-      }
-
-      return () => {
-        this.ctx.globalAlpha = oldOpacity;
-      };
-    };
-
-    shouldDraw = (): boolean => {
-      const state = this.animationState;
-
-      switch (state.type) {
-        case AnimationType.Gone:
-        case AnimationType.ScheduledForDeletion:
-          return false;
-        case AnimationType.FadeOut:
-          if (state.opacity === 0) return false;
-          break;
-        default:
-          break;
-      }
-
-      return true;
-    };
-
-    stroke = () => {
-      if (this.animationState.type === AnimationType.Gone) return;
-
-      const resetContext = this.updateContext();
-      this.ctx.stroke();
-      resetContext();
-    };
-
-    fillRect = (x: number, y: number, w: number, h: number): void => {
-      if (this.animationState.type === AnimationType.Gone) return;
-
-      const resetContext = this.updateContext();
-      this.ctx.fillRect(x, y, w, h);
-      resetContext();
-    };
-
-    strokeRect = (x: number, y: number, w: number, h: number): void => {
-      if (this.animationState.type === AnimationType.Gone) return;
-
-      const resetContext = this.updateContext();
-      this.ctx.strokeRect(x, y, w, h);
-      resetContext();
-    };
-  }
-
-  export class Parallel extends BaseAnimation {
-    animations: Animation[];
-    constructor(...animations: Animation[]) {
-      super(animations[0].getContext());
-
-      this.animations = animations;
+    switch (this.animationState.type) {
+      case AnimationType.FadeOut:
+        this.ctx.globalAlpha *= this.animationState.opacity;
     }
 
-    updateAnimation = (delta: number) => {
-      if (this.animations.length === 0) return true;
+    return () => {
+      this.ctx.globalAlpha = oldOpacity;
+    };
+  };
 
-      let allFinished = true;
+  shouldDraw = (): boolean => {
+    const state = this.animationState;
 
-      let i = 0;
-      while (i < this.animations.length) {
-        if (this.animations[i].shouldDelete()) {
-          this.animations.splice(i, 1);
-          continue;
-        }
+    switch (state.type) {
+      case AnimationType.Gone:
+      case AnimationType.ScheduledForDeletion:
+        return false;
+      case AnimationType.FadeOut:
+        if (state.opacity === 0) return false;
+        break;
+      default:
+        break;
+    }
 
-        const finished = this.animations[i].update(delta);
-        allFinished = allFinished && finished;
+    return true;
+  };
+
+  stroke = () => {
+    if (this.animationState.type === AnimationType.Gone) return;
+
+    const resetContext = this.updateContext();
+    this.ctx.stroke();
+    resetContext();
+  };
+
+  fillRect = (x: number, y: number, w: number, h: number): void => {
+    if (this.animationState.type === AnimationType.Gone) return;
+
+    const resetContext = this.updateContext();
+    this.ctx.fillRect(x, y, w, h);
+    resetContext();
+  };
+
+  strokeRect = (x: number, y: number, w: number, h: number): void => {
+    if (this.animationState.type === AnimationType.Gone) return;
+
+    const resetContext = this.updateContext();
+    this.ctx.strokeRect(x, y, w, h);
+    resetContext();
+  };
+}
+
+export class Parallel extends BaseAnimation {
+  animations: Animation[];
+  constructor(...animations: Animation[]) {
+    super(animations[0].getContext());
+
+    this.animations = animations;
+  }
+
+  updateAnimation = (delta: number) => {
+    if (this.animations.length === 0) return true;
+
+    let allFinished = true;
+
+    let i = 0;
+    while (i < this.animations.length) {
+      if (this.animations[i].shouldDelete()) {
+        this.animations.splice(i, 1);
+        continue;
+      }
+
+      const finished = this.animations[i].update(delta);
+      allFinished = allFinished && finished;
+      ++i;
+    }
+
+    this.setFinished(allFinished);
+    return this.isFinished();
+  };
+
+  draw = () => {
+    this.animations.forEach(a => a.render(this.renderOptions()));
+  };
+}
+
+export abstract class BaseSequential<
+  A extends Animation = Animation
+> extends BaseAnimation {
+  abstract size(): number;
+  abstract removeAtIndex(index: number): void;
+  abstract get(index: number): A;
+  abstract add(animation: A): void;
+  empty = (): boolean => this.size() === 0;
+
+  constructor(ctx: CanvasRenderingContext2D) {
+    super(ctx);
+  }
+
+  updateAnimation = (delta: number) => {
+    const { size, get, removeAtIndex, setFinished, isFinished } = this;
+    if (size() === 0) return true;
+
+    let i = 0;
+    while (i < size()) {
+      const animation = get(i);
+      if (animation.shouldDelete()) {
+        removeAtIndex(i);
+        continue;
+      }
+      const finished = animation.update(delta);
+      if (finished) {
         ++i;
+      } else {
+        setFinished(false);
+        return isFinished();
       }
+    }
 
-      this.setFinished(allFinished);
-      return this.isFinished();
-    };
+    setFinished(true);
+    return isFinished();
+  };
 
-    draw = () => {
-      this.animations.forEach(a => a.render());
-    };
+  draw = () => {
+    const { empty, size, get } = this;
+    if (empty()) return;
+
+    let done = false;
+    let i = 0;
+    while (!done) {
+      const animation = get(i);
+      animation.render(this.renderOptions());
+      ++i;
+      done = !animation.isFinished() || i == size();
+    }
+  };
+}
+
+export class Sequential extends BaseSequential {
+  private animations: Animation[];
+
+  constructor(ctx: CanvasRenderingContext2D) {
+    super(ctx);
+
+    this.animations = [];
   }
 
-  export abstract class BaseSequential<
-    A extends Animation = Animation
-  > extends BaseAnimation {
-    abstract size(): number;
-    abstract removeAtIndex(index: number): void;
-    abstract get(index: number): A;
-    abstract add(animation: A): void;
-    empty = (): boolean => this.size() === 0;
+  size = (): number => this.animations.length;
 
-    constructor(ctx: CanvasRenderingContext2D) {
-      super(ctx);
-    }
+  removeAtIndex = (index: number): void => {
+    this.animations.splice(index, 1);
+  };
 
-    updateAnimation = (delta: number) => {
-      const { size, get, removeAtIndex, setFinished, isFinished } = this;
-      if (size() === 0) return true;
+  get = (index: number): Animation => {
+    return this.animations[index];
+  };
 
-      let i = 0;
-      while (i < size()) {
-        const animation = get(i);
-        if (animation.shouldDelete()) {
-          removeAtIndex(i);
-          continue;
-        }
-        const finished = animation.update(delta);
-        if (finished) {
-          ++i;
-        } else {
-          setFinished(false);
-          return isFinished();
-        }
-      }
+  add = (animation: Animation): void => {
+    this.animations.push(animation);
+  };
 
-      setFinished(true);
-      return isFinished();
-    };
+  static create(...animations: Animation[]): Sequential {
+    const result = new Sequential(animations[0].getContext());
+    result.animations = animations;
 
-    draw = () => {
-      const { empty, size, get } = this;
-      if (empty()) return;
-
-      let done = false;
-      let i = 0;
-      while (!done) {
-        const animation = get(i);
-        animation.render();
-        ++i;
-        done = !animation.isFinished() || i == size();
-      }
-    };
-  }
-
-  export class Sequential extends BaseSequential {
-    private animations: Animation[];
-
-    constructor(ctx: CanvasRenderingContext2D) {
-      super(ctx);
-
-      this.animations = [];
-    }
-
-    size = (): number => this.animations.length;
-
-    removeAtIndex = (index: number): void => {
-      this.animations.splice(index, 1);
-    };
-
-    get = (index: number): Animation => {
-      return this.animations[index];
-    };
-
-    add = (animation: Animation): void => {
-      this.animations.push(animation);
-    };
-
-    static create(...animations: Animation[]): Sequential {
-      const result = new Sequential(animations[0].getContext());
-      result.animations = animations;
-
-      return result;
-    }
+    return result;
   }
 }

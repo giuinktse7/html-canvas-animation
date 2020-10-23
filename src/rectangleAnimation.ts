@@ -63,6 +63,10 @@ export class Rectangle {
     this.height = height;
   }
 
+  static animate(ctx: CanvasRenderingContext2D): RectangleAnimations {
+    return new RectangleAnimations(ctx);
+  }
+
   static scale({
     ctx,
     duration,
@@ -243,13 +247,13 @@ class RectangleAnimations extends BaseSequential {
   private rectangle?: Rectangle;
   constructor(
     ctx: CanvasRenderingContext2D,
-    thunk: RectangleThunk,
+    thunk?: RectangleThunk,
     rectangle?: Rectangle
   ) {
     super(ctx);
-    this.rectangle = rectangle;
 
-    this.addThunk(thunk);
+    if (rectangle) this.rectangle = rectangle;
+    if (thunk) this.addThunk(thunk);
   }
 
   size = (): number => this.animations.length + this.animationThunks.length;

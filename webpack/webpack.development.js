@@ -1,13 +1,13 @@
-const NpmDtsPlugin = require("npm-dts-webpack-plugin");
 const path = require("path");
+const CopyPlugin = require("copy-webpack-plugin");
 
 module.exports = config => ({
   mode: "development",
   entry: [path.resolve(config.sourceDir, "./index.ts")],
   devtool: "source-map",
   plugins: [
-    new NpmDtsPlugin({
-      output: path.resolve(config.buildDir, "./debug/index.d.ts"),
+    new CopyPlugin({
+      patterns: [{ from: "./package.json" }],
     }),
   ],
   module: {

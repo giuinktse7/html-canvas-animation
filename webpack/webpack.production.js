@@ -1,9 +1,15 @@
 const path = require("path");
+const CopyPlugin = require("copy-webpack-plugin");
 
 module.exports = config => ({
   mode: "production",
   entry: [path.resolve(config.sourceDir, "./index.ts")],
   devtool: "source-map",
+  plugins: [
+    new CopyPlugin({
+      patterns: [{ from: "./package.json" }],
+    }),
+  ],
   module: {
     rules: [
       {
@@ -13,7 +19,7 @@ module.exports = config => ({
             loader: "ts-loader",
             options: {
               compilerOptions: {
-                outDir: "./build/release",
+                outDir: path.resolve(config.buildDir, "./release"),
               },
             },
           },
@@ -23,11 +29,11 @@ module.exports = config => ({
     ],
   },
   resolve: {
-    extensions: [".ts", ".js"],
+    extensions: [".webpack.js", ".web.js", ".js", ".ts"],
   },
   output: {
     filename: "html-canvas-animation-min.js",
-    path: config.buildDir + "/release",
+    path: path.resolve(config.buildDir, "./release"),
     library: "html-canvas-animation",
     libraryTarget: "umd",
   },
