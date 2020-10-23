@@ -1,0 +1,19 @@
+{
+  "name": "html-canvas-animation",
+  "version": "0.1.0",
+  "description": "Simple animations for HTML canvas using typescript",
+  "scripts": {
+    "build": "webpack --env mode=development",
+    "build:prod": "webpack --env mode=production",
+    "build:dev": "webpack --env mode=development"
+  },
+  "devDependencies": {
+    "ts-loader": "^8.0.4",
+    "typescript": "^4.0.3",
+    "webpack": "^4.44.2",
+    "webpack-cli": "^4.1.0"
+  },
+  "repository": "https://github.com/giuinktse7/html-canvas-animation",
+  "author": "Jonathan Krän",
+  "license": "GPL-3.0"
+}
