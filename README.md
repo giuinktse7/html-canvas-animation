@@ -1,5 +1,7 @@
 # html-canvas-animation
 
+A TypeScript (compiles to JavaScript) library for running animations in HTML Canvas. The library can be consumed as a local NPM package (installable through `npm` or `yarn`).
+
 ## Usage
 
 Build with `yarn build:prod` (production) or `yarn build` (development).
@@ -22,7 +24,7 @@ Build with `yarn build:prod` (production) or `yarn build` (development).
 
 4. Import and use.
 
-   **Example**:
+## Example
 
 ```typescript
 import { Rectangle, CanvasLoop, easing } from "html-canvas-animation";
